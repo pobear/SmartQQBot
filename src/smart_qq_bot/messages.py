@@ -5,10 +5,11 @@ GROUP_MSG = "group_message"
 SESS_MSG = "sess_message"
 INPUT_NOTIFY_MSG = "input_notify"
 KICK_MSG = "kick_message"
+DISCU_MSG = "discu_message"
 
 # Msg type in message content
 OFF_PIC_PART = "offpic"
-C_FACE_PART = "cface"
+C_FACE_PART = "face"
 
 OFF_PIC_PLACEHOLDER = "[图片]"
 C_FACE_PLACEHOLDER = "[表情]"
@@ -40,11 +41,9 @@ class QMessage(object):
         for msg_part in self._content:
             if isinstance(msg_part, (str, unicode)):
                 text += msg_part
-            elif len(msg_part) > 1:
-                if str(msg_part[0]) == OFF_PIC_PART:
-                    text += OFF_PIC_PLACEHOLDER
-                elif str(msg_part[0]) == C_FACE_PART:
-                    text += C_FACE_PLACEHOLDER
+            elif isinstance(msg_part, list):
+                if msg_part[0] == C_FACE_PART:
+                    text += '[%s:%s]' % tuple(msg_part[:2])
 
         return text
 
@@ -90,12 +89,21 @@ class GroupMsg(QMessage):
         self.send_uin = msg_dict['value']['send_uin']
         self.from_uin = msg_dict['value']['from_uin']
 
+
+class DiscuMsg(QMessage):
+    def __init__(self, msg_dict):
+        super(DiscuMsg, self).__init__(msg_dict)
+        self.group_code = msg_dict['value']['did']
+        self.send_uin = msg_dict['value']['send_uin']
+        self.from_uin = msg_dict['value']['from_uin']
+
 MSG_TYPE_MAP = {
     GROUP_MSG: GroupMsg,
     INPUT_NOTIFY_MSG: QMessage,
     KICK_MSG: QMessage,
     SESS_MSG: SessMsg,
     PRIVATE_MSG: PrivateMsg,
+    DISCU_MSG: DiscuMsg,
 }
 
 
